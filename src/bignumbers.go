@@ -2,7 +2,6 @@ package bignumbers
 
 type BigNumber struct {
 	blocks []Uint
-	hex    string
 }
 
 func (bn *BigNumber) SetHex(hex string) error {
@@ -15,7 +14,6 @@ func (bn *BigNumber) SetHex(hex string) error {
 		}
 		uintBlocks = append(uintBlocks, u)
 	}
-	bn.hex = hex
 	bn.blocks = uintBlocks
 
 	return nil
