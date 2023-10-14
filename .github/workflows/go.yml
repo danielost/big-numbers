@@ -13,19 +13,24 @@ jobs:
         go-version: 1.21.1
       id: go
 
+    - name: Set GOPATH
+      run: echo "::set-env name=GOPATH::${{ github.workspace }}"
+
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
 
     - name: Get dependencies
       run: |
-        go get -v -t -d ./...        
+        export PATH="${{ github.workspace }}/bin:${PATH}"
+        go get -v -t -d ./...
 
     - name: Build
       env:
         GOPROXY: "https://proxy.golang.org"
-      run: go build .\src
+      run: go build ./src
 
     - name: Test
       env:
         GOPROXY: "https://proxy.golang.org"
-      run: go test -v .\src\tests\
+      run: go test -v ./src/tests/
+      
