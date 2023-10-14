@@ -43,6 +43,14 @@ func FromHex(hex string) Uint {
 }
 
 func ValidateHex(hex string) (string, error) {
-	//TODO validate hex
-	return strings.ToLower(hex), nil
+	hex = strings.ToLower(hex)
+	if len(hex) > 16 {
+		return "", fmt.Errorf("max hex length is 16")
+	}
+	for _, r := range hex {
+		if !strings.ContainsRune(hexDigits, r) {
+			return "", fmt.Errorf("'%s' is not a hex digit", string(r))
+		}
+	}
+	return hex, nil
 }
