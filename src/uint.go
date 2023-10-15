@@ -74,3 +74,23 @@ func (u *Uint) SetBinary(bin string) error {
 
 	return nil
 }
+
+func (u *Uint) Invert() (result Uint) {
+	result.SetDecimal(^u.value)
+	return
+}
+
+func (u *Uint) XOR(other Uint) (result Uint) {
+	result.SetDecimal(u.GetDecimal() ^ other.GetDecimal())
+	return
+}
+
+func (u *Uint) AND(other Uint) (result Uint) {
+	result.SetDecimal(u.GetDecimal() & other.GetDecimal())
+	return
+}
+
+func (u *Uint) OR(other Uint) (result Uint) {
+	result.SetDecimal(u.GetDecimal() | other.GetDecimal())
+	return
+}
