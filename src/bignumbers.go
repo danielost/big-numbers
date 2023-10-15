@@ -41,6 +41,38 @@ func (bn *BigNumber) GetHex() (hex string) {
 	return hex
 }
 
+func (bn *BigNumber) SetBinary(binary string) error {
+	stringBlocks := breakStringIntoBlocks(binary, 64)
+	uintBlocks := make([]Uint, 0)
+	for _, b := range stringBlocks {
+		var u Uint
+		if err := u.SetBinary(b); err != nil {
+			return err
+		}
+		uintBlocks = append(uintBlocks, u)
+	}
+	bn.blocks = uintBlocks
+
+	return nil
+}
+
+func (bn *BigNumber) GetBinary() (binary string) {
+	for i, block := range bn.blocks {
+		blockBinary := block.GetBinary()
+		if i != len(bn.blocks)-1 {
+			missingZerosCount := 64 - len(blockBinary)
+			var sb strings.Builder
+			for i := 0; i < missingZerosCount; i++ {
+				sb.WriteString("0")
+			}
+			sb.WriteString(blockBinary)
+			blockBinary = sb.String()
+		}
+		binary = blockBinary + binary
+	}
+	return
+}
+
 func (bn *BigNumber) Invert() (result BigNumber) {
 	invertedBlocks := make([]Uint, len(bn.blocks))
 	for i, block := range bn.blocks {
@@ -80,4 +112,21 @@ func (bn *BigNumber) AND(other BigNumber) (result BigNumber) {
 
 func (bn *BigNumber) OR(other BigNumber) (result BigNumber) {
 	return binaryOperation(*bn, other, func(u1, u2 Uint) uint64 { return u1.value | u2.value })
+}
+
+func (bn *BigNumber) ShiftL(n int) (result BigNumber) {
+	binary := bn.GetBinary()
+	var sb strings.Builder
+	sb.WriteString(binary)
+	for i := 0; i < n; i++ {
+		sb.WriteRune('0')
+	}
+	result.SetBinary(sb.String())
+	return
+}
+
+func (bn *BigNumber) ShiftR(n int) (result BigNumber) {
+	binary := bn.GetBinary()
+	result.SetBinary(binary[:len(binary)-n])
+	return
 }
