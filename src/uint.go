@@ -84,3 +84,8 @@ func (u *Uint) XOR(other Uint) (result Uint) {
 	result.SetDecimal(u.GetDecimal() ^ other.GetDecimal())
 	return
 }
+
+func (u *Uint) AND(other Uint) (result Uint) {
+	result.SetDecimal(u.GetDecimal() & other.GetDecimal())
+	return
+}

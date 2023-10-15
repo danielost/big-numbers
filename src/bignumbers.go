@@ -73,3 +73,7 @@ func binaryOperation(a, b BigNumber, operation func(Uint, Uint) uint64) (result 
 func (bn *BigNumber) XOR(other BigNumber) (result BigNumber) {
 	return binaryOperation(*bn, other, func(u1, u2 Uint) uint64 { return u1.value ^ u2.value })
 }
+
+func (bn *BigNumber) AND(other BigNumber) (result BigNumber) {
+	return binaryOperation(*bn, other, func(u1, u2 Uint) uint64 { return u1.value & u2.value })
+}
