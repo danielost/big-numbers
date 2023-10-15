@@ -39,6 +39,7 @@ func TestUint_SetHex(t *testing.T) {
 	}{
 		{name: "Set 123456789aBcDeF", u: new(bignumbers.Uint), hex: "123456789aBcDeF", wantErr: false},
 		{name: "Set FFFFFFFFFFFFFFFF", u: new(bignumbers.Uint), hex: "FFFFFFFFFFFFFFFF", wantErr: false},
+		// {name: "Set 1abc0000000dddddddddddddd0000ffffffff003", u: new(bignumbers.Uint), hex: "1abc0000000dddddddddddddd0000ffffffff003", wantErr: false},
 		{name: "Set abcdef12541abcdef2: length > 16", u: new(bignumbers.Uint), hex: "abcdef12541abcdef2", wantErr: true},
 		{name: "Set eF3X7: contains prohibited symbol", u: new(bignumbers.Uint), hex: "eF3X7", wantErr: true},
 	}

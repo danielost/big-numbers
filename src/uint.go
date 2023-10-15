@@ -74,3 +74,8 @@ func (u *Uint) SetBinary(bin string) error {
 
 	return nil
 }
+
+func (u *Uint) Invert() (result Uint) {
+	result.SetDecimal(^u.value)
+	return
+}

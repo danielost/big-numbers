@@ -2,6 +2,7 @@ package bignumbers
 
 import (
 	"math"
+	"strings"
 )
 
 func reverseString(s string) string {
@@ -26,4 +27,18 @@ func breakStringIntoBlocks(input string, blockSize int) []string {
 	}
 
 	return blocks
+}
+
+func RemoveLeadingZeros(value string) string {
+	return value[strings.Index(value, "1"):]
+}
+
+func AddLeadingZeros(value string, size int) string {
+	missingZerosCount := size - len(value)
+	var sb strings.Builder
+	for i := 0; i < missingZerosCount; i++ {
+		sb.WriteString("0")
+	}
+	sb.WriteString(value)
+	return sb.String()
 }

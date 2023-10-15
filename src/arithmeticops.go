@@ -1,13 +1,13 @@
 package bignumbers
 
 type ArithmeticOps interface {
-	ADD(BigNumber)
-	SUB(BigNumber)
-	MOD(BigNumber)
+	ADD(interface{})
+	SUB(interface{})
+	MOD(interface{})
 }
 
 type AdvancedArithmeticOps interface {
-	MUL(BigNumber)
-	DIV(BigNumber)
-	POWMOD(BigNumber, int)
+	MUL(interface{})
+	DIV(interface{})
+	POWMOD(interface{}, int)
 }

@@ -2,9 +2,9 @@ package bignumbers
 
 type BinaryOps interface {
 	Invert()
-	XOR(BigNumber)
-	OR(BigNumber)
-	AND(BigNumber)
+	XOR(interface{})
+	OR(interface{})
+	AND(interface{})
 	ShiftR(int)
 	ShiftL(int)
 }
