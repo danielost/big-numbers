@@ -89,3 +89,8 @@ func (u *Uint) AND(other Uint) (result Uint) {
 	result.SetDecimal(u.GetDecimal() & other.GetDecimal())
 	return
 }
+
+func (u *Uint) OR(other Uint) (result Uint) {
+	result.SetDecimal(u.GetDecimal() | other.GetDecimal())
+	return
+}
