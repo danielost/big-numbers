@@ -1,6 +1,7 @@
 package bignumbers
 
 import (
+	"math"
 	"strings"
 )
 
@@ -50,4 +51,25 @@ func (bn *BigNumber) Invert() (result BigNumber) {
 	resultHex = resultHex[len(resultHex)-len(bn.GetHex()):]
 	result.SetHex(resultHex)
 	return
+}
+
+func binaryOperation(a, b BigNumber, operation func(Uint, Uint) uint64) (result BigNumber) {
+	blocks := make([]Uint, int(math.Max(float64(len(a.blocks)), float64(len(b.blocks)))))
+	for i, j := 0, 0; i < len(a.blocks) || j < len(b.blocks); i, j = i+1, j+1 {
+		if i >= len(a.blocks) {
+			blocks[i] = b.blocks[j]
+		} else if j >= len(b.blocks) {
+			blocks[i] = a.blocks[i]
+		} else {
+			var u Uint
+			u.SetDecimal(operation(a.blocks[i], b.blocks[j]))
+			blocks[i] = u
+		}
+	}
+	result.blocks = blocks
+	return
+}
+
+func (bn *BigNumber) XOR(other BigNumber) (result BigNumber) {
+	return binaryOperation(*bn, other, func(u1, u2 Uint) uint64 { return u1.value ^ u2.value })
 }

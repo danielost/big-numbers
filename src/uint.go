@@ -79,3 +79,8 @@ func (u *Uint) Invert() (result Uint) {
 	result.SetDecimal(^u.value)
 	return
 }
+
+func (u *Uint) XOR(other Uint) (result Uint) {
+	result.SetDecimal(u.GetDecimal() ^ other.GetDecimal())
+	return
+}
