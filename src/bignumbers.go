@@ -130,3 +130,31 @@ func (bn *BigNumber) ShiftR(n int) (result BigNumber) {
 	result.SetBinary(binary[:len(binary)-n])
 	return
 }
+
+func (bn *BigNumber) ADD(other BigNumber) (res BigNumber) {
+	carry := Uint{0}
+	thisBlocks := bn.blocks
+	otherBlocks := other.blocks
+	for i := 0; i < len(thisBlocks) || i < len(otherBlocks); i++ {
+		if i >= len(thisBlocks) {
+			res.blocks = append(res.blocks, otherBlocks[i].ADD(carry))
+			carry = Uint{}
+		} else if i >= len(otherBlocks) {
+			res.blocks = append(res.blocks, thisBlocks[i].ADD(carry))
+			carry = Uint{}
+		} else {
+			sum := thisBlocks[i].ADD(otherBlocks[i])
+			sumWithCarry := sum.ADD(carry)
+			res.blocks = append(res.blocks, sumWithCarry)
+			if sumWithCarry.GetDecimal() < thisBlocks[i].GetDecimal() || sumWithCarry.GetDecimal() < otherBlocks[i].GetDecimal() {
+				carry = Uint{1}
+			} else {
+				carry = Uint{0}
+			}
+		}
+	}
+	if carry.GetDecimal() > 0 {
+		res.blocks = append(res.blocks, carry)
+	}
+	return
+}
