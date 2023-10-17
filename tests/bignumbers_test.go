@@ -25,8 +25,8 @@ func TestBigNumber_SetHex(t *testing.T) {
 		hex            string
 		expectedBlocks []bignumbers.Uint
 	}{
-		{name: "Set 1abc0000000dddddddddddddd0000ffffffff003", hex: "1abc0000000dddddddddddddd0000ffffffff003", expectedBlocks: []bignumbers.Uint{{Value: 14987997152075051011}, {Value: 3903119677054429}, {Value: 448528384}}},
-		{name: "Set 33ced2c76b26cae94e162c4c0d2c0ff7c13094b0185a3c122e732d5ba77efebc", hex: "33ced2c76b26cae94e162c4c0d2c0ff7c13094b0185a3c122e732d5ba77efebc", expectedBlocks: []bignumbers.Uint{{Value: 3347068819741802172}, {Value: 13920789932245924882}, {Value: 5626733489596141559}, {Value: 3733152895074749161}}},
+		{name: "Set #1", hex: "1abc0000000dddddddddddddd0000ffffffff003", expectedBlocks: []bignumbers.Uint{{Value: 14987997152075051011}, {Value: 3903119677054429}, {Value: 448528384}}},
+		{name: "Set #2", hex: "33ced2c76b26cae94e162c4c0d2c0ff7c13094b0185a3c122e732d5ba77efebc", expectedBlocks: []bignumbers.Uint{{Value: 3347068819741802172}, {Value: 13920789932245924882}, {Value: 5626733489596141559}, {Value: 3733152895074749161}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -103,8 +103,8 @@ func TestBigNumber_Invert(t *testing.T) {
 		hex         string
 		expectedHex string
 	}{
-		{name: "Invert 1abc0000000dddddddddddddd0000ffffffff003", hex: "1abc0000000dddddddddddddd0000ffffffff003", expectedHex: "E543FFFFFFF22222222222222FFFF00000000FFC"},
-		{name: "Invert 33ced2c76b26cae94e162c4c0d2c0ff7c13094b0185a3c122e732d5ba77efebc", hex: "33ced2c76b26cae94e162c4c0d2c0ff7c13094b0185a3c122e732d5ba77efebc", expectedHex: "cc312d3894d93516b1e9d3b3f2d3f0083ecf6b4fe7a5c3edd18cd2a458810143"},
+		{name: "Invert #1", hex: "1abc0000000dddddddddddddd0000ffffffff003", expectedHex: "E543FFFFFFF22222222222222FFFF00000000FFC"},
+		{name: "Invert #2", hex: "33ced2c76b26cae94e162c4c0d2c0ff7c13094b0185a3c122e732d5ba77efebc", expectedHex: "cc312d3894d93516b1e9d3b3f2d3f0083ecf6b4fe7a5c3edd18cd2a458810143"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -132,7 +132,7 @@ func TestBigNumber_XOR(t *testing.T) {
 		var bnRight bignumbers.BigNumber
 		bnLeft.SetHex(tt.left)
 		bnRight.SetHex(tt.right)
-		t.Run("OR", func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			if result := bnLeft.XOR(bnRight); result.GetHex() != strings.ToLower(tt.expectedHex) {
 				t.Errorf("BigNumber.XOR() error: expected %s but got %s", tt.expectedHex, result.GetHex())
 			}
@@ -155,7 +155,7 @@ func TestBigNumber_AND(t *testing.T) {
 		var bnRight bignumbers.BigNumber
 		bnLeft.SetHex(tt.left)
 		bnRight.SetHex(tt.right)
-		t.Run("OR", func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			if result := bnLeft.AND(bnRight); result.GetHex() != strings.ToLower(tt.expectedHex) {
 				t.Errorf("BigNumber.AND() error: expected %s but got %s", tt.expectedHex, result.GetHex())
 			}
@@ -178,7 +178,7 @@ func TestBigNumber_OR(t *testing.T) {
 		var bnRight bignumbers.BigNumber
 		bnLeft.SetHex(tt.left)
 		bnRight.SetHex(tt.right)
-		t.Run("OR", func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			if result := bnLeft.OR(bnRight); result.GetHex() != strings.ToLower(tt.expectedHex) {
 				t.Errorf("BigNumber.OR() error: expected %s but got %s", tt.expectedHex, result.GetHex())
 			}
