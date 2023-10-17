@@ -2,7 +2,7 @@ package bignumbers
 
 type ArithmeticOps interface {
 	ADD(BigNumber) BigNumber
-	SUB(BigNumber) BigNumber
+	SUB(BigNumber) (BigNumber, error)
 	MOD(BigNumber) BigNumber
 }
 
