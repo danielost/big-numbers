@@ -216,3 +216,11 @@ func (bn *BigNumber) SUB(other BigNumber) (res BigNumber, err error) {
 	res.clearLeadingZeros()
 	return
 }
+
+func (bn *BigNumber) MOD(other BigNumber) (res BigNumber) {
+	res.blocks = bn.blocks
+	for other.LessThan(res) {
+		res, _ = res.SUB(other)
+	}
+	return
+}
