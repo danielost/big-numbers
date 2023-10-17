@@ -76,6 +76,12 @@ func (bn *BigNumber) getValue(blockSize int, getter func(Uint) string) (result s
 	return
 }
 
+func (bn *BigNumber) clearLeadingZeros() {
+	for len(bn.blocks) > 0 && bn.blocks[len(bn.blocks)-1].GetDecimal() == 0 {
+		bn.blocks = bn.blocks[:len(bn.blocks)-1]
+	}
+}
+
 func (bn *BigNumber) Invert() (result BigNumber) {
 	invertedBlocks := make([]Uint, len(bn.blocks))
 	for i, block := range bn.blocks {
@@ -207,5 +213,6 @@ func (bn *BigNumber) SUB(other BigNumber) (res BigNumber, err error) {
 	if carry.GetDecimal() > 0 {
 		res.blocks = append(res.blocks, carry)
 	}
+	res.clearLeadingZeros()
 	return
 }
