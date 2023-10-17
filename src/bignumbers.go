@@ -5,14 +5,26 @@ import (
 	"strings"
 )
 
+// BigNumber represents a big number as a slice of blocks. Each block is a uint64 value.
 type BigNumber struct {
 	blocks []Uint
 }
 
+// GetBlocks returns the blocks of the BigNumber.
 func (bn *BigNumber) GetBlocks() []Uint {
 	return bn.blocks
 }
 
+// SetBlocks sets the blocks of the BigNumber to the provided slice of Uint blocks.
+func (bn *BigNumber) SetBlocks(blocks []Uint) {
+	bn.blocks = blocks
+}
+
+func (bn *BigNumber) AppendBlock(block Uint) {
+	bn.SetBlocks(append(bn.GetBlocks(), block))
+}
+
+// SetHex sets the value of the BigNumber using a hexadecimal string.
 func (bn *BigNumber) SetHex(hex string) error {
 	return bn.setValue(16, hex, func(s string) (Uint, error) {
 		var u Uint
@@ -23,6 +35,7 @@ func (bn *BigNumber) SetHex(hex string) error {
 	})
 }
 
+// SetBinary sets the value of the BigNumber using a binary string.
 func (bn *BigNumber) SetBinary(binary string) error {
 	return bn.setValue(64, binary, func(s string) (Uint, error) {
 		var u Uint
@@ -33,6 +46,7 @@ func (bn *BigNumber) SetBinary(binary string) error {
 	})
 }
 
+// setValue sets the value of the BigNumber based on the provided block size, value, and setter function.
 func (bn *BigNumber) setValue(blockSize int, value string, setter func(string) (Uint, error)) error {
 	inputBlocks := breakStringIntoBlocks(value, blockSize)
 	resultBlocks := make([]Uint, 0)
@@ -43,84 +57,89 @@ func (bn *BigNumber) setValue(blockSize int, value string, setter func(string) (
 		}
 		resultBlocks = append(resultBlocks, u)
 	}
-	bn.blocks = resultBlocks
+	bn.SetBlocks(resultBlocks)
 	return nil
 }
 
+// GetHex returns the hexadecimal representation of the BigNumber.
 func (bn *BigNumber) GetHex() (hex string) {
 	return bn.getValue(16, func(u Uint) string {
 		return u.GetHex()
 	})
 }
 
+// GetBinary returns the binary representation of the BigNumber.
 func (bn *BigNumber) GetBinary() (hex string) {
 	return bn.getValue(64, func(u Uint) string {
 		return u.GetBinary()
 	})
 }
 
+// getValue returns the representation of the BigNumber based on the provided block size and getter function.
 func (bn *BigNumber) getValue(blockSize int, getter func(Uint) string) (result string) {
-	for i, block := range bn.blocks {
+	for i, block := range bn.GetBlocks() {
 		blockValue := getter(block)
-		if i != len(bn.blocks)-1 {
-			missingZerosCount := blockSize - len(blockValue)
-			var sb strings.Builder
-			for i := 0; i < missingZerosCount; i++ {
-				sb.WriteString("0")
-			}
-			sb.WriteString(blockValue)
-			blockValue = sb.String()
+		if i != len(bn.GetBlocks())-1 {
+			blockValue = AddLeadingZeros(blockValue, blockSize)
 		}
 		result = blockValue + result
 	}
 	return
 }
 
+// clearLeadingZeros removes leading zero blocks from the BigNumber.
 func (bn *BigNumber) clearLeadingZeros() {
-	for len(bn.blocks) > 0 && bn.blocks[len(bn.blocks)-1].GetDecimal() == 0 {
-		bn.blocks = bn.blocks[:len(bn.blocks)-1]
+	for len(bn.GetBlocks()) > 0 && bn.GetBlocks()[len(bn.GetBlocks())-1].GetDecimal() == 0 {
+		bn.SetBlocks(bn.GetBlocks()[:len(bn.GetBlocks())-1])
 	}
 }
 
+// Invert returns the bitwise inversion of the BigNumber.
 func (bn *BigNumber) Invert() (result BigNumber) {
-	invertedBlocks := make([]Uint, len(bn.blocks))
-	for i, block := range bn.blocks {
+	invertedBlocks := make([]Uint, len(bn.GetBlocks()))
+	for i, block := range bn.GetBlocks() {
 		invertedBlocks[i] = block.Invert()
 	}
-	result.blocks = invertedBlocks
+	result.SetBlocks(invertedBlocks)
 	resultHex := result.GetHex()
 	resultHex = resultHex[len(resultHex)-len(bn.GetHex()):]
 	result.SetHex(resultHex)
 	return
 }
 
+// binaryOperation performs a binary operation on two BigNumbers using the provided operation function.
 func binaryOperation(a, b BigNumber, operation func(Uint, Uint) Uint) (result BigNumber) {
-	blocks := make([]Uint, 0)
-	for i := 0; i < len(a.blocks) || i < len(b.blocks); i++ {
-		if i >= len(a.blocks) {
-			blocks = append(blocks, operation(b.blocks[i], Uint{0}))
-		} else if i >= len(b.blocks) {
-			blocks = append(blocks, operation(a.blocks[i], Uint{0}))
+	aBlocks := a.GetBlocks()
+	bBlocks := b.GetBlocks()
+	for i := 0; i < len(aBlocks) || i < len(bBlocks); i++ {
+		if i >= len(aBlocks) {
+			result.AppendBlock(operation(bBlocks[i], Uint{0}))
+		} else if i >= len(bBlocks) {
+			result.AppendBlock(operation(aBlocks[i], Uint{0}))
 		} else {
-			blocks = append(blocks, operation(a.blocks[i], b.blocks[i]))
+			result.AppendBlock(operation(aBlocks[i], bBlocks[i]))
 		}
 	}
-	result.blocks = blocks
+	result.clearLeadingZeros()
 	return
 }
 
+// XOR performs a bitwise XOR operation between two BigNumbers.
 func (bn *BigNumber) XOR(other BigNumber) (result BigNumber) {
 	return binaryOperation(*bn, other, func(u1, u2 Uint) Uint { return u1.XOR(u2) })
 }
 
+// AND performs a bitwise AND operation between two BigNumbers.
 func (bn *BigNumber) AND(other BigNumber) (result BigNumber) {
 	return binaryOperation(*bn, other, func(u1, u2 Uint) Uint { return u1.AND(u2) })
 }
 
+// OR performs a bitwise OR operation between two BigNumbers.
 func (bn *BigNumber) OR(other BigNumber) (result BigNumber) {
 	return binaryOperation(*bn, other, func(u1, u2 Uint) Uint { return u1.OR(u2) })
 }
 
+// ShiftL performs a left shift operation on the BigNumber.
 func (bn *BigNumber) ShiftL(n int) (result BigNumber) {
 	binary := bn.GetBinary()
 	var sb strings.Builder
@@ -132,12 +151,14 @@ func (bn *BigNumber) ShiftL(n int) (result BigNumber) {
 	return
 }
 
+// ShiftR performs a right shift operation on the BigNumber.
 func (bn *BigNumber) ShiftR(n int) (result BigNumber) {
 	binary := bn.GetBinary()
 	result.SetBinary(binary[:len(binary)-n])
 	return
 }
 
+// LessThan checks if the BigNumber is less than another BigNumber.
 func (bn *BigNumber) LessThan(other BigNumber) bool {
 	thisBlocks := bn.GetBlocks()
 	otherBlocks := other.GetBlocks()
@@ -158,21 +179,22 @@ func (bn *BigNumber) LessThan(other BigNumber) bool {
 	return false
 }
 
-func (bn *BigNumber) ADD(other BigNumber) (res BigNumber) {
+// ADD performs addition of two BigNumbers.
+func (bn *BigNumber) ADD(other BigNumber) (result BigNumber) {
 	carry := Uint{0}
-	thisBlocks := bn.blocks
-	otherBlocks := other.blocks
+	thisBlocks := bn.GetBlocks()
+	otherBlocks := other.GetBlocks()
 	for i := 0; i < len(thisBlocks) || i < len(otherBlocks); i++ {
 		if i >= len(thisBlocks) {
-			res.blocks = append(res.blocks, otherBlocks[i].ADD(carry))
-			carry = Uint{}
+			result.AppendBlock(otherBlocks[i].ADD(carry))
+			carry = Uint{0}
 		} else if i >= len(otherBlocks) {
-			res.blocks = append(res.blocks, thisBlocks[i].ADD(carry))
-			carry = Uint{}
+			result.AppendBlock(thisBlocks[i].ADD(carry))
+			carry = Uint{0}
 		} else {
 			sum := thisBlocks[i].ADD(otherBlocks[i])
 			sum = sum.ADD(carry)
-			res.blocks = append(res.blocks, sum)
+			result.AppendBlock(sum)
 			if sum.GetDecimal() < thisBlocks[i].GetDecimal() || sum.GetDecimal() < otherBlocks[i].GetDecimal() {
 				carry = Uint{1}
 			} else {
@@ -181,29 +203,31 @@ func (bn *BigNumber) ADD(other BigNumber) (res BigNumber) {
 		}
 	}
 	if carry.GetDecimal() > 0 {
-		res.blocks = append(res.blocks, carry)
+		result.AppendBlock(carry)
 	}
 	return
 }
 
-func (bn *BigNumber) SUB(other BigNumber) (res BigNumber, err error) {
+// SUB performs subtraction of two BigNumbers.
+func (bn *BigNumber) SUB(other BigNumber) (result BigNumber, err error) {
 	if bn.LessThan(other) {
 		return BigNumber{}, fmt.Errorf("sub result is negative")
 	}
 	carry := Uint{0}
-	thisBlocks := bn.blocks
-	otherBlocks := other.blocks
+	thisBlocks := bn.GetBlocks()
+	otherBlocks := other.GetBlocks()
 	for i := 0; i < len(thisBlocks) || i < len(otherBlocks); i++ {
 		if i >= len(thisBlocks) {
-			res.blocks = append(res.blocks, Uint{otherBlocks[i].Value - carry.Value})
-			carry = Uint{}
+			result.AppendBlock(otherBlocks[i].SUB(carry))
+			carry = Uint{0}
 		} else if i >= len(otherBlocks) {
-			res.blocks = append(res.blocks, Uint{thisBlocks[i].Value - carry.Value})
-			carry = Uint{}
+			result.AppendBlock(thisBlocks[i].SUB(carry))
+			carry = Uint{0}
 		} else {
-			sum := thisBlocks[i].Value - otherBlocks[i].Value - carry.Value
-			res.blocks = append(res.blocks, Uint{sum})
-			if sum > thisBlocks[i].GetDecimal() {
+			diff := thisBlocks[i].SUB(otherBlocks[i])
+			diff = diff.SUB(carry)
+			result.AppendBlock(diff)
+			if diff.GetDecimal() > thisBlocks[i].GetDecimal() {
 				carry = Uint{1}
 			} else {
 				carry = Uint{0}
@@ -211,16 +235,20 @@ func (bn *BigNumber) SUB(other BigNumber) (res BigNumber, err error) {
 		}
 	}
 	if carry.GetDecimal() > 0 {
-		res.blocks = append(res.blocks, carry)
+		result.AppendBlock(carry)
 	}
-	res.clearLeadingZeros()
+	result.clearLeadingZeros()
 	return
 }
 
-func (bn *BigNumber) MOD(other BigNumber) (res BigNumber) {
-	res.blocks = bn.blocks
-	for other.LessThan(res) {
-		res, _ = res.SUB(other)
+/*
+MOD calculates the modulo of two BigNumbers.
+Note: this implementation is very inefficient as it doesn't use the division operation.
+*/
+func (bn *BigNumber) MOD(other BigNumber) (result BigNumber) {
+	result.SetBlocks(bn.GetBlocks())
+	for !result.LessThan(other) {
+		result, _ = result.SUB(other)
 	}
 	return
 }
