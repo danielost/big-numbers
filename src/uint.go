@@ -94,3 +94,7 @@ func (u *Uint) OR(other Uint) Uint {
 func (u *Uint) ADD(other Uint) Uint {
 	return Uint{u.GetDecimal() + other.GetDecimal()}
 }
+
+func (u *Uint) SUB(other Uint) Uint {
+	return Uint{u.GetDecimal() - other.GetDecimal()}
+}

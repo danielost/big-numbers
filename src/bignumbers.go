@@ -1,6 +1,7 @@
 package bignumbers
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -131,6 +132,26 @@ func (bn *BigNumber) ShiftR(n int) (result BigNumber) {
 	return
 }
 
+func (bn *BigNumber) LessThan(other BigNumber) bool {
+	thisBlocks := bn.GetBlocks()
+	otherBlocks := other.GetBlocks()
+	if len(thisBlocks) < len(otherBlocks) {
+		return true
+	}
+	if len(thisBlocks) > len(otherBlocks) {
+		return false
+	}
+	for i := len(thisBlocks) - 1; i >= 0; i-- {
+		if thisBlocks[i].GetDecimal() < otherBlocks[i].GetDecimal() {
+			return true
+		}
+		if thisBlocks[i].GetDecimal() > otherBlocks[i].GetDecimal() {
+			return false
+		}
+	}
+	return false
+}
+
 func (bn *BigNumber) ADD(other BigNumber) (res BigNumber) {
 	carry := Uint{0}
 	thisBlocks := bn.blocks
@@ -144,9 +165,39 @@ func (bn *BigNumber) ADD(other BigNumber) (res BigNumber) {
 			carry = Uint{}
 		} else {
 			sum := thisBlocks[i].ADD(otherBlocks[i])
-			sumWithCarry := sum.ADD(carry)
-			res.blocks = append(res.blocks, sumWithCarry)
-			if sumWithCarry.GetDecimal() < thisBlocks[i].GetDecimal() || sumWithCarry.GetDecimal() < otherBlocks[i].GetDecimal() {
+			sum = sum.ADD(carry)
+			res.blocks = append(res.blocks, sum)
+			if sum.GetDecimal() < thisBlocks[i].GetDecimal() || sum.GetDecimal() < otherBlocks[i].GetDecimal() {
+				carry = Uint{1}
+			} else {
+				carry = Uint{0}
+			}
+		}
+	}
+	if carry.GetDecimal() > 0 {
+		res.blocks = append(res.blocks, carry)
+	}
+	return
+}
+
+func (bn *BigNumber) SUB(other BigNumber) (res BigNumber, err error) {
+	if bn.LessThan(other) {
+		return BigNumber{}, fmt.Errorf("sub result is negative")
+	}
+	carry := Uint{0}
+	thisBlocks := bn.blocks
+	otherBlocks := other.blocks
+	for i := 0; i < len(thisBlocks) || i < len(otherBlocks); i++ {
+		if i >= len(thisBlocks) {
+			res.blocks = append(res.blocks, Uint{otherBlocks[i].Value - carry.Value})
+			carry = Uint{}
+		} else if i >= len(otherBlocks) {
+			res.blocks = append(res.blocks, Uint{thisBlocks[i].Value - carry.Value})
+			carry = Uint{}
+		} else {
+			sum := thisBlocks[i].Value - otherBlocks[i].Value - carry.Value
+			res.blocks = append(res.blocks, Uint{sum})
+			if sum > thisBlocks[i].GetDecimal() {
 				carry = Uint{1}
 			} else {
 				carry = Uint{0}
