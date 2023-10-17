@@ -6,13 +6,13 @@ import (
 )
 
 type Uint struct {
-	value uint64
+	Value uint64
 }
 
 const hexDigits string = "0123456789abcdef"
 
 func (u *Uint) GetHex() (hex string) {
-	value := u.value
+	value := u.GetDecimal()
 	for value > 0 {
 		hex = string(hexDigits[value%16]) + hex
 		value /= 16
@@ -37,21 +37,21 @@ func (u *Uint) SetHex(hex string) error {
 			value += left * uint64(pow)
 		}
 	}
-	u.value = value
+	u.SetDecimal(value)
 
 	return nil
 }
 
 func (u *Uint) GetDecimal() uint64 {
-	return u.value
+	return u.Value
 }
 
 func (u *Uint) SetDecimal(value uint64) {
-	u.value = value
+	u.Value = value
 }
 
 func (u *Uint) GetBinary() (bin string) {
-	value := u.value
+	value := u.GetDecimal()
 	for value > 0 {
 		bin = fmt.Sprint(value%2) + bin
 		value /= 2
@@ -70,27 +70,31 @@ func (u *Uint) SetBinary(bin string) error {
 		right := uint64(math.Pow(2, float64(len(bin)-i-1)))
 		value += left * right
 	}
-	u.value = value
+	u.SetDecimal(value)
 
 	return nil
 }
 
-func (u *Uint) Invert() (result Uint) {
-	result.SetDecimal(^u.value)
-	return
+func (u *Uint) Invert() Uint {
+	return Uint{^u.GetDecimal()}
 }
 
-func (u *Uint) XOR(other Uint) (result Uint) {
-	result.SetDecimal(u.GetDecimal() ^ other.GetDecimal())
-	return
+func (u *Uint) XOR(other Uint) Uint {
+	return Uint{u.GetDecimal() ^ other.GetDecimal()}
 }
 
-func (u *Uint) AND(other Uint) (result Uint) {
-	result.SetDecimal(u.GetDecimal() & other.GetDecimal())
-	return
+func (u *Uint) AND(other Uint) Uint {
+	return Uint{u.GetDecimal() & other.GetDecimal()}
 }
 
-func (u *Uint) OR(other Uint) (result Uint) {
-	result.SetDecimal(u.GetDecimal() | other.GetDecimal())
-	return
+func (u *Uint) OR(other Uint) Uint {
+	return Uint{u.GetDecimal() | other.GetDecimal()}
+}
+
+func (u *Uint) ADD(other Uint) Uint {
+	return Uint{u.GetDecimal() + other.GetDecimal()}
+}
+
+func (u *Uint) SUB(other Uint) Uint {
+	return Uint{u.GetDecimal() - other.GetDecimal()}
 }
